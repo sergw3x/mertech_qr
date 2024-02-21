@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"github.com/tarm/serial"
 )
 
@@ -105,26 +104,28 @@ func (m *MertechQr) ScreenOff() (int, error) {
 func (m *MertechQr) ShowQr(qrText string) (int, error) {
 
 	if qrText == "" {
-		fmt.Println("ERROR String is empty")
-		return 0, nil
+		return 0, errors.New("qr string is empty")
 	} else if len(qrText) > 1000 {
-		fmt.Println("ERROR String is too large")
-		return 0, nil
+		return 0, errors.New("qr string is too large")
 	}
 
-	var num = uint8(len(qrText))
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, num)
-	if err != nil {
-		return 0, fmt.Errorf("binary.Write failed: %s", err)
-	}
+	getBinaryLen(qrText)
 
 	buff := concat([][]byte{
-		_Head, {0x00}, buf.Bytes(), []byte(qrText), _Tail,
+		_Head, {0x00}, getBinaryLen(qrText), []byte(qrText), _Tail,
 	})
 
 	return m.conn.Write(buff)
 
+}
+
+func getBinaryLen(text string) []byte {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, uint8(len(text)))
+	if err != nil {
+		return nil
+	}
+	return buf.Bytes()
 }
 
 func concat(slices [][]byte) []byte {

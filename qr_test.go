@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/tarm/serial"
 	"log"
+	"strings"
 	"testing"
 	"time"
 )
@@ -41,6 +42,22 @@ func connect() *MertechQr {
 
 func disconnect(mertech *MertechQr) {
 	if err := mertech.Disconnect(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func TestWrongConnect(t *testing.T) {
+	mertechWrong := NewMertechQr(&serial.Config{
+		Name:        "",
+		Baud:        SpeedBaud,
+		ReadTimeout: time.Second,
+		Size:        DataBits,
+		StopBits:    serial.Stop1,
+		Parity:      serial.ParityNone,
+	})
+	err := mertechWrong.Connect()
+	// must be error
+	if err == nil {
 		log.Fatal(err)
 	}
 }
@@ -141,6 +158,12 @@ func TestDisableBluetooth(t *testing.T) {
 func TestShowQr(t *testing.T) {
 	mertech := connect()
 	defer disconnect(mertech)
+
+	wrongText := strings.Repeat("A", 1001)
+	_, err := mertech.ShowQr(wrongText)
+	if err == nil {
+		t.Fatal("must be error. line bigger than 1000")
+	}
 
 	ShowQr, err := mertech.ShowQr(fake.City())
 	if err != nil {
