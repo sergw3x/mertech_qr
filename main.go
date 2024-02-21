@@ -1,0 +1,141 @@
+package main
+
+import (
+	"bytes"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"github.com/tarm/serial"
+)
+
+var (
+	_Head             = []byte{0x02, 0xf2, 0x02}
+	_Tail             = []byte{0x02, 0xf2, 0x03}
+	_Clear            = []byte{0x02, 0xf0, 0x03, 0x43, 0x4c, 0x53, 0x03}
+	_ScreenOn         = []byte{0x02, 0xf0, 0x03, 0x42, 0x54, 0x4f, 0x4e, 0x03}
+	_ScreenOff        = []byte{0x02, 0xf0, 0x03, 0x42, 0x54, 0x4f, 0x46, 0x46, 0x03}
+	_CheckFirmware    = []byte{0x02, 0xF0, 0x03, 0x30, 0x44, 0x31, 0x33, 0x30, 0x32, 0x3F, 0x03}
+	_PicOk            = []byte{0x02, 0xF0, 0x03, 0x63, 0x6F, 0x72, 0x72, 0x65, 0x63, 0x74, 0x03}
+	_PicFalse         = []byte{0x02, 0xF0, 0x03, 0x6D, 0x69, 0x73, 0x74, 0x61, 0x6B, 0x65, 0x03}
+	_EnableBluetooth  = []byte{0x02, 0xF0, 0x03, 0x42, 0x54, 0x4F, 0x4E, 0x03}
+	_DisableBluetooth = []byte{0x02, 0x02, 0xF0, 0x03, 0x42, 0x54, 0x4F, 0x46, 0x46, 0x03}
+)
+
+const (
+	DataBits  byte = 8
+	SpeedBaud      = 115200
+)
+
+type MertechQr struct {
+	conn        *serial.Port
+	isConnected bool
+	config      *serial.Config
+}
+
+func NewMertechQr(conf *serial.Config) *MertechQr {
+	return &MertechQr{config: conf}
+}
+
+func (m *MertechQr) Connect() error {
+
+	if m.config.Name == "" {
+		return errors.New("empty serialNo")
+	}
+
+	conn, err := serial.OpenPort(m.config)
+	if err != nil {
+		return err
+	}
+
+	m.isConnected = true
+	m.conn = conn
+
+	return nil
+
+}
+
+func (m *MertechQr) Disconnect() error {
+	return m.conn.Close()
+}
+
+func (m *MertechQr) CheckFirmware() ([]byte, error) {
+	_, err := m.conn.Write(_CheckFirmware)
+	if err != nil {
+		return nil, err
+	}
+
+	buf := make([]byte, 128)
+	n, err := m.conn.Read(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf[:n], err
+}
+
+func (m *MertechQr) ShowPicOk() (int, error) {
+	return m.conn.Write(_PicOk)
+}
+
+func (m *MertechQr) ShowPicFalse() (int, error) {
+	return m.conn.Write(_PicFalse)
+}
+
+func (m *MertechQr) EnableBluetooth() (int, error) {
+	return m.conn.Write(_EnableBluetooth)
+}
+
+func (m *MertechQr) DisableBluetooth() (int, error) {
+	return m.conn.Write(_DisableBluetooth)
+}
+
+func (m *MertechQr) ScreenClear() (int, error) {
+	return m.conn.Write(_Clear)
+}
+
+func (m *MertechQr) ScreenOn() (int, error) {
+	return m.conn.Write(_ScreenOn)
+}
+
+// ScreenOff In my case, when working with windows, after disabling the display, the device changes the com port
+func (m *MertechQr) ScreenOff() (int, error) {
+	return m.conn.Write(_ScreenOff)
+}
+
+func (m *MertechQr) ShowQr(qrText string) (int, error) {
+
+	if qrText == "" {
+		fmt.Println("ERROR String is empty")
+		return 0, nil
+	} else if len(qrText) > 1000 {
+		fmt.Println("ERROR String is too large")
+		return 0, nil
+	}
+
+	var num = uint8(len(qrText))
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, num)
+	if err != nil {
+		return 0, fmt.Errorf("binary.Write failed: %s", err)
+	}
+
+	buff := concat([][]byte{
+		_Head, {0x00}, buf.Bytes(), []byte(qrText), _Tail,
+	})
+
+	return m.conn.Write(buff)
+
+}
+
+func concat(slices [][]byte) []byte {
+	var totalLen int
+	for _, s := range slices {
+		totalLen += len(s)
+	}
+	tmp := make([]byte, totalLen)
+	var i int
+	for _, s := range slices {
+		i += copy(tmp[i:], s)
+	}
+	return tmp
+}
