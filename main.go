@@ -81,6 +81,8 @@ func (m *MertechQr) CheckFirmware() ([]byte, error) {
 		return nil, err
 	}
 
+	time.Sleep(time.Second)
+
 	buf := make([]byte, 128)
 	n, err := m.conn.Read(buf)
 	if err != nil {
