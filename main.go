@@ -39,12 +39,6 @@ type Config struct {
 
 	// Size is the number of data bits. If 0, DefaultSize is used.
 	Size byte
-
-	// Parity is the bit to use and defaults to ParityNone (no parity bit).
-	Parity serial.Parity
-
-	// Number of stop bits to use. Default is 1 (1 stop bit).
-	StopBits serial.StopBits
 }
 
 func NewMertechQr(conf *Config) *MertechQr {
@@ -54,8 +48,8 @@ func NewMertechQr(conf *Config) *MertechQr {
 		Baud:        conf.Baud,
 		ReadTimeout: conf.ReadTimeout,
 		Size:        conf.Size,
-		Parity:      conf.Parity,
-		StopBits:    conf.StopBits,
+		Parity:      serial.ParityNone,
+		StopBits:    serial.Stop1,
 	}}
 }
 

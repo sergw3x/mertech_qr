@@ -25,8 +25,6 @@ mertech := NewMertechQr(&serial.Config{
     Baud:        SpeedBaud,         // 115200
     ReadTimeout: time.Second,
     Size:        DataBits,          // 8 byte
-    StopBits:    serial.Stop1,      // 1
-    Parity:      serial.ParityNone, // 0
 })
 
 err = mertech.Connect()

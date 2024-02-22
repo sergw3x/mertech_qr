@@ -3,7 +3,6 @@ package mertech_qr
 import (
 	"github.com/icrowley/fake"
 	"github.com/joho/godotenv"
-	"github.com/tarm/serial"
 	"log"
 	"strings"
 	"testing"
@@ -27,8 +26,6 @@ func connect() *MertechQr {
 		Baud:        SpeedBaud,
 		ReadTimeout: time.Second,
 		Size:        DataBits,
-		StopBits:    serial.Stop1,
-		Parity:      serial.ParityNone,
 	}
 
 	mertech := NewMertechQr(conf)
@@ -52,8 +49,6 @@ func TestWrongConnect(t *testing.T) {
 		Baud:        SpeedBaud,
 		ReadTimeout: time.Second,
 		Size:        DataBits,
-		StopBits:    serial.Stop1,
-		Parity:      serial.ParityNone,
 	})
 	err := mertechWrong.Connect()
 	// must be error
