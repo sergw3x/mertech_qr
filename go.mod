@@ -1,4 +1,4 @@
-module mertech_qr
+module github.com/sergw3x/mertech_qr
 
 go 1.22.0
 
