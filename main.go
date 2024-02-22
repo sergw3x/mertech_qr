@@ -1,4 +1,4 @@
-package main
+package mertech_qr
 
 import (
 	"bytes"
