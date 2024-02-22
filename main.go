@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/tarm/serial"
+	"time"
 )
 
 var (
@@ -31,8 +32,31 @@ type MertechQr struct {
 	config      *serial.Config
 }
 
-func NewMertechQr(conf *serial.Config) *MertechQr {
-	return &MertechQr{config: conf}
+type Config struct {
+	Name        string
+	Baud        int
+	ReadTimeout time.Duration // Total timeout
+
+	// Size is the number of data bits. If 0, DefaultSize is used.
+	Size byte
+
+	// Parity is the bit to use and defaults to ParityNone (no parity bit).
+	Parity serial.Parity
+
+	// Number of stop bits to use. Default is 1 (1 stop bit).
+	StopBits serial.StopBits
+}
+
+func NewMertechQr(conf *Config) *MertechQr {
+
+	return &MertechQr{config: &serial.Config{
+		Name:        conf.Name,
+		Baud:        conf.Baud,
+		ReadTimeout: conf.ReadTimeout,
+		Size:        conf.Size,
+		Parity:      conf.Parity,
+		StopBits:    conf.StopBits,
+	}}
 }
 
 func (m *MertechQr) Connect() error {

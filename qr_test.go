@@ -22,7 +22,7 @@ func connect() *MertechQr {
 
 	serialName := envs["SERIAL"]
 
-	conf := &serial.Config{
+	conf := &Config{
 		Name:        serialName,
 		Baud:        SpeedBaud,
 		ReadTimeout: time.Second,
@@ -47,7 +47,7 @@ func disconnect(mertech *MertechQr) {
 }
 
 func TestWrongConnect(t *testing.T) {
-	mertechWrong := NewMertechQr(&serial.Config{
+	mertechWrong := NewMertechQr(&Config{
 		Name:        "",
 		Baud:        SpeedBaud,
 		ReadTimeout: time.Second,
