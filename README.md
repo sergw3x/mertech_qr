@@ -1,5 +1,3 @@
-[![An old rock in the desert](https://mertech.ru/image/cache/catalog/goods/qr-code-display/1951/1951-1-700x700.jpg)](https://mertech.ru/image/cache/catalog/goods/qr-code-display/1951/1951-1-700x700.jpg)
-
 # GoLang package for working with [Mertech QR-Pay](https://mertech.ru/displej-qr-kodov-mertech-qr-pay-red/) via serial port
 
 ## Supported commands:
