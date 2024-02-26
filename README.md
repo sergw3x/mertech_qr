@@ -52,7 +52,7 @@ import (
 func main() {
 	var err error
 
-	ports, err := serial.GetPortsList()
+	ports, err := serial.GetPortsList() // show serial list 
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func main() {
 	for i, port := range ports {
 		table.Append([]string{strconv.Itoa(i + 1), port})
 	}
-	table.Render()
+	table.Render() // show table
 
 	portNum := 0
 
@@ -86,6 +86,7 @@ func main() {
 	serialName := ports[portNum-1]
 	fmt.Printf("Selected: %s\n", serialName)
 
+    // make new object
 	m := qr.NewMertechQr(&qr.Config{
 		Name:        ports[portNum-1],
 		Baud:        qr.SpeedBaud, // 115200
@@ -93,12 +94,21 @@ func main() {
 		Size:        qr.DataBits, // 8 byte
 	})
 
+    // try to connect
 	if err = m.Connect(); err != nil {
 		log.Fatal(err)
 	}
 	defer func(m *qr.MertechQr) { _ = m.Disconnect() }(m)
 
+    // send text to device
 	bytes, err := m.ShowQr("hello world")
 	fmt.Printf("%s writed: %d", serialName, bytes)
 }
 ```
+
+- you can build it for any platform (like arm raspberry pi)
+```CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -a -o ./tmp/serial_test tmp/serial.go```
+
+- use ```serial.GetPortsList()``` for detect right serial
+- for linux like /dev/ttyACM0 or use ```/dev/serial/[by-id , by-path]/[id or path]``` 
+- for win use names COM + num (COM3, COM4 etc.)
