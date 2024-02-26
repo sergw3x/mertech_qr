@@ -121,12 +121,12 @@ func (m *MertechQr) ScreenOff() (int, error) {
 	return m.conn.Write(_ScreenOff)
 }
 
-func (m *MertechQr) ShowQr(qrText string) (int, error) {
+func (m *MertechQr) ShowQr(qrText string) (writeCnt int, readCnt int, result []byte, err error) {
 
 	if qrText == "" {
-		return 0, errors.New("qr string is empty")
+		return writeCnt, readCnt, result, errors.New("qr string is empty")
 	} else if len(qrText) > 1000 {
-		return 0, errors.New("qr string is too large")
+		return writeCnt, readCnt, result, errors.New("qr string is too large")
 	}
 
 	getBinaryLen(qrText)
@@ -135,7 +135,20 @@ func (m *MertechQr) ShowQr(qrText string) (int, error) {
 		_Head, {0x00}, getBinaryLen(qrText), []byte(qrText), _Tail,
 	})
 
-	return m.conn.Write(buff)
+	readCnt, err = m.conn.Write(buff)
+	if err != nil {
+		return writeCnt, readCnt, result, err
+	}
+
+	time.Sleep(time.Second)
+
+	buf := make([]byte, 128)
+	writeCnt, err = m.conn.Read(buf)
+	if err != nil {
+		return writeCnt, readCnt, result, err
+	}
+
+	return writeCnt, readCnt, buf, nil
 
 }
 

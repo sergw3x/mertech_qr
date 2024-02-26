@@ -1,6 +1,7 @@
 package mertech_qr
 
 import (
+	"fmt"
 	"github.com/icrowley/fake"
 	"github.com/joho/godotenv"
 	"log"
@@ -155,12 +156,13 @@ func TestShowQr(t *testing.T) {
 	defer disconnect(mertech)
 
 	wrongText := strings.Repeat("A", 1001)
-	_, err := mertech.ShowQr(wrongText)
+	_, _, result, err := mertech.ShowQr(wrongText)
 	if err == nil {
 		t.Fatal("must be error. line bigger than 1000")
 	}
+	fmt.Println(string(result))
 
-	ShowQr, err := mertech.ShowQr(fake.City())
+	ShowQr, _, result, err := mertech.ShowQr(fake.City())
 	if err != nil {
 		t.Fatal(err)
 	}
